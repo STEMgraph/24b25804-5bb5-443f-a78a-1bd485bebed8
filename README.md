@@ -1,51 +1,154 @@
 <!---
 {
-  "depends_on": [],
+  "id": "24b25804-5bb5-443f-a78a-1bd485bebed8",
+  "depends_on": ["fcef696e-079c-4d83-b611-7b378bb8ac07"],
   "author": "Stephan Bökelmann",
-  "first_used": "2025-03-17",
-  "keywords": ["learning", "exercises", "education", "practice"]
+  "first_used": "2025-05-13",
+  "keywords": ["docker", "containerization", "linux", "development"]
 }
 --->
 
-# Learning Through Exercises
 
-## Introduction
-Learning by doing is one of the most effective methods to acquire new knowledge and skills. Rather than passively consuming information, actively engaging in problem-solving fosters deeper understanding and long-term retention. By working through structured exercises, students can grasp complex concepts in a more intuitive and applicable way. This approach is particularly beneficial in technical fields like programming, mathematics, and engineering.
+# Introduction to Docker
+
+> In this exercise you will learn how to run and manage basic Docker containers. Furthermore we will explore how Docker images are built, saved, transferred, and executed across different systems.
+
+### Introduction
+
+Docker is a powerful containerization platform that enables developers to package applications and their dependencies into isolated environments called containers. Unlike virtual machines that replicate full operating systems, containers share the host's kernel, making them more efficient and lightweight.
+
+The key benefit of Docker lies in consistency: a container will run the same regardless of the underlying host, so long as the architecture matches. Docker images are blueprints that define how containers are instantiated — they are immutable and stored in registries, such as Docker Hub. The Docker Engine is responsible for managing the lifecycle of containers.
+
+This exercise guides you through the basics of pulling, building, exporting, and transferring Docker images, focusing on clarity and minimalism by using the small `alpine` base image. You will also explore why Docker images are portable and when they need to be rebuilt.
 
 ### Further Readings and Other Sources
-- [The Importance of Practice in Learning](https://www.sciencedirect.com/science/article/pii/S036013151300062X)
-- "The Art of Learning" by Josh Waitzkin
-- [How to Learn Effectively: 5 Key Strategies](https://www.edutopia.org/article/5-research-backed-learning-strategies)
+
+* [Docker Documentation](https://docs.docker.com/get-started/)
+* ["What is Docker?" by Red Hat](https://www.redhat.com/en/topics/containers/what-is-docker)
+* [Dockerfile reference](https://docs.docker.com/engine/reference/builder/)
 
 ## Tasks
-1. **Write a Summary**: Summarize the concept of "learning by doing" in 3-5 sentences.
-2. **Example Identification**: List three examples from your own experience where learning through exercises helped you understand a topic better.
-3. **Create an Exercise**: Design a simple exercise for a topic of your choice that someone else could use to practice.
-4. **Follow an Exercise**: Find an online tutorial that includes exercises and complete at least two of them.
-5. **Modify an Existing Exercise**: Take a basic problem from a textbook or online course and modify it to make it slightly more challenging.
-6. **Pair Learning**: Explain a concept to a partner and guide them through an exercise without giving direct answers.
-7. **Review Mistakes**: Look at an exercise you've previously completed incorrectly. Identify why the mistake happened and how to prevent it in the future.
-8. **Time Challenge**: Set a timer for 10 minutes and try to solve as many simple exercises as possible on a given topic.
-9. **Self-Assessment**: Create a checklist to evaluate your own performance in completing exercises effectively.
-10. **Reflect on Progress**: Write a short paragraph on how this structured approach to exercises has influenced your learning.
 
-<details>
-  <summary>Tip for Task 5</summary>
-  Try making small adjustments first, such as increasing the difficulty slightly or adding an extra constraint.
-</details>
+### 1. Installing Docker on Linux
+
+Before starting with Docker, you need to install the Docker Engine on your system.
+
+#### On Linux (Debian/Ubuntu):
+
+```sh
+$ sudo apt update
+$ sudo apt install apt-transport-https ca-certificates curl software-properties-common
+$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
+$ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+$ sudo apt update
+$ sudo apt install docker-ce
+```
+
+#### After installation, verify Docker is running:
+
+```sh
+$ docker --version
+```
+
+You may need to log out and back in or run `sudo` to execute Docker commands if permission is denied.
+
+### 2. Hello World in Docker
+
+Run a simple test container to verify that Docker is working correctly:
+
+```sh
+$ docker run hello-world
+```
+
+**Step-by-step explanation:**
+
+* `docker run` attempts to find the `hello-world` image locally.
+* If it's not present, Docker automatically pulls it from Docker Hub.
+* It then creates a container from the image and executes its default command.
+* The container prints a success message and then exits.
+
+Check the output for confirmation that Docker is properly installed.
+
+### 3. Clean Up
+
+Remove unused containers and images to keep your system clean:
+
+```sh
+$ docker ps -a
+$ docker rm <container_id>
+$ docker rmi hello-world
+```
+
+**Explanation:**
+
+* `docker ps -a` lists all containers, including those that have exited.
+* `docker rm` removes a specific container by ID.
+* `docker rmi` deletes the image from your local system.
+* Use `docker images` to ensure the image has been removed.
+
+### 4. Build a Minimal Hello World Image with Alpine
+
+Create a lightweight image that prints a message using Alpine Linux:
+
+**Dockerfile:**
+
+```Dockerfile
+FROM alpine:latest
+CMD ["echo", "Hello from a minimal Docker image!"]
+```
+
+Build and execute it:
+
+```sh
+$ docker build -t alpine-hello .
+$ docker run alpine-hello
+```
+
+**Explanation:**
+
+* `FROM alpine:latest` sets the base image to Alpine Linux.
+* `CMD` defines the command to run when the container starts.
+* `docker build` creates the image using the Dockerfile in the current directory.
+* `docker run` executes the container, which prints the message.
+
+### 5. Export and Run Image on Another Machine
+
+Save the image to a `.tar` archive and move it to another system:
+
+```sh
+$ docker save alpine-hello -o alpine-hello.tar
+```
+
+Transfer it using any method, e.g. `scp`:
+
+```sh
+$ scp alpine-hello.tar user@remote:/tmp/
+```
+
+On the target machine:
+
+```sh
+$ docker load -i /tmp/alpine-hello.tar
+$ docker run alpine-hello
+```
+
+**Explanation:**
+
+* `docker save` exports the image into a file.
+* The file is copied to another system.
+* `docker load` imports the image on the new system.
+* You can now run the container without rebuilding.
+
+Docker images are portable because they encapsulate all required layers and metadata. As long as the target machine uses the same CPU architecture (e.g., x86\_64), the container will run identically. Rebuilding is only necessary if the destination architecture differs, such as ARM vs x86. Multi-architecture support can be handled using Docker Buildx.
 
 ## Questions
-1. What are the main benefits of learning through exercises compared to passive learning?
-2. How do exercises improve long-term retention?
-3. Can you think of a subject where learning through exercises might be less effective? Why?
-4. What role does feedback play in learning through exercises?
-5. How can self-designed exercises improve understanding?
-6. Why is it beneficial to review past mistakes in exercises?
-7. How does explaining a concept to someone else reinforce your own understanding?
-8. What strategies can you use to stay motivated when practicing with exercises?
-9. How can timed challenges contribute to learning efficiency?
-10. How do exercises help bridge the gap between theory and practical application?
+
+1. What is the difference between a Docker image and a container?
+2. How does Docker differ from traditional virtual machines?
+3. What happens internally when you run `docker run hello-world`?
+4. Why can the same Docker image run on different machines without rebuilding?
+5. When would you need to rebuild a Docker image for another system?
 
 ## Advice
-Practice consistently and seek out diverse exercises that challenge different aspects of a topic. Combine exercises with reflection and feedback to maximize your learning efficiency. Don't hesitate to adapt exercises to fit your own needs and ensure that you're actively engaging with the material, rather than just going through the motions.
 
+The best way to understand Docker is by experimenting. Try modifying the Dockerfile, adding files, or changing commands to see how images behave. Always clean up your environment to avoid unnecessary clutter. As you grow more confident, explore how to use Docker Compose or orchestrate containers with Kubernetes. For deeper insights, check out related sheets like [Docker Networking](#) and [Multi-Stage Builds](#). Docker is a cornerstone of modern DevOps — learning it well opens many opportunities.
