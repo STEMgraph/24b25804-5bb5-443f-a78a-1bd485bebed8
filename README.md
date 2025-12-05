@@ -2,7 +2,7 @@
 {
   "id": "24b25804-5bb5-443f-a78a-1bd485bebed8",
   "teaches": "Introduction to Docker",
-  "depends_on": ["fcef696e-079c-4d83-b611-7b378bb8ac07"],
+  "depends_on": ["fcef696e-079c-4d83-b611-7b378bb8ac07","b9e34253-61e2-4fb7-bd36-388c370fa765"],
   "author": "Stephan Bökelmann",
   "first_used": "2025-05-13",
   "keywords": ["docker", "containerization", "linux", "development"]
